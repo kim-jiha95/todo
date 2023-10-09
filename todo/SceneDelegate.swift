@@ -12,12 +12,48 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 
 
+//    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+//        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
+//        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
+//        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
+//        guard let windowScene = (scene as? UIWindowScene) else { return }
+//            window = UIWindow(windowScene: windowScene)
+//
+//                // ViewController 초기화
+//                let mainViewController = ViewController()
+//
+//                // MARK: Window 구성
+//            window?.rootViewController = mainViewController
+//                // 화면에 띄울 Root 뷰 컨트롤러 지정
+//
+//            window?.backgroundColor = .systemBackground
+//                // Window의 Background Color설정.
+//                // window 또는 ViewController의 backgroundColor중 하나는 설정되어야합니다.
+//                // 둘중 하나 미설정시 검은화면만 보입니다.
+//
+//            window?.makeKeyAndVisible()
+//                // 구성된 창 띄우기
+//                // 이것도 미설정시 검은화면
+//        }
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+        // UISceneConfiguration 객체를 생성하고 반환
+        let sceneConfig = UISceneConfiguration(name: "Default Configuration", sessionRole: session.role)
+        
+        // 네비게이션 컨트롤러의 초기 루트 뷰 컨트롤러를 생성
+        let rootViewController = ViewController() // 이 부분에 초기 뷰 컨트롤러를 지정
+        
+        // 네비게이션 컨트롤러를 생성하고 루트 뷰 컨트롤러로 설정
+        let navigationController = UINavigationController(rootViewController: rootViewController)
+        
+        // 윈도우에 네비게이션 컨트롤러를 설정
+        if let windowScene = scene as? UIWindowScene {
+            let window = UIWindow(windowScene: windowScene)
+            window.rootViewController = navigationController
+            self.window = window
+            window.makeKeyAndVisible()
+        }
     }
+
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
