@@ -11,13 +11,15 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
     var todoItems = [String]()
     var tableView: UITableView!
+    var inputTextField: UITextField!
+    var isAddingItem = false // 추가 중인지 여부를 나타내는 변수
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
         style()
         layout()
-        
+
         navigationController?.navigationBar.isHidden = false
     }
 
@@ -30,6 +32,14 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         tableView.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         view.addSubview(tableView)
+
+        // 입력 창 설정
+        inputTextField = UITextField()
+        inputTextField.translatesAutoresizingMaskIntoConstraints = false
+        inputTextField.placeholder = "할 일을 입력하세요"
+        inputTextField.returnKeyType = .done
+        inputTextField.delegate = self
+        view.addSubview(inputTextField)
     }
 
     private func style() {
@@ -44,7 +54,10 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     private func layout() {
         // 테이블 뷰의 제약 조건 추가
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor, constant: 20), // 수정
+            inputTextField.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
+            inputTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            inputTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            tableView.topAnchor.constraint(equalTo: inputTextField.bottomAnchor, constant: 20),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -63,87 +76,64 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         return cell
     }
 
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        // 수정 액션
-        let editAction = UIContextualAction(style: .normal, title: "수정") { [weak self] (action, view, completionHandler) in
-            self?.editItem(at: indexPath)
-            completionHandler(true)
-        }
-        editAction.backgroundColor = .blue
-
-        // 삭제 액션
-        let deleteAction = UIContextualAction(style: .destructive, title: "삭제") { [weak self] (action, view, completionHandler) in
-            self?.deleteItem(at: indexPath)
-            completionHandler(true)
-        }
-
-        // 삭제 작업 버튼의 배경색과 아이콘을 지정
-        deleteAction.backgroundColor = .red
-        deleteAction.image = UIImage(systemName: "trash")
-
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
-        return configuration
-    }
-
-    // "삭제" 버튼 눌렀을 때 호출되는 메서드
-    @objc func deleteButtonTapped(_ sender: UIButton) {
-        // 이 부분은 필요 없습니다.
-    }
-
-    // 할 일 추가 버튼 액션
-    @objc func addTodoItem() {
-        let alertController = UIAlertController(title: "새로운 할 일", message: "", preferredStyle: .alert)
-
-        alertController.addTextField { textField in
-            textField.placeholder = "할 일을 입력하세요"
-        }
-
-        let addAction = UIAlertAction(title: "추가", style: .default) { [weak self] _ in
-            if let textField = alertController.textFields?.first, let text = textField.text, !text.isEmpty {
-                self?.todoItems.append(text)
-                self?.tableView.reloadData()
-            }
-        }
-
-        let cancelAction = UIAlertAction(title: "취소", style: .cancel, handler: nil)
-
-        alertController.addAction(addAction)
-        alertController.addAction(cancelAction)
-
-        present(alertController, animated: true, completion: nil)
-    }
-
-    // 수정 액션 실행
-    func editItem(at indexPath: IndexPath) {
-        let alertController = UIAlertController(title: "수정", message: "", preferredStyle: .alert)
-
-        alertController.addTextField { textField in
-            textField.placeholder = "수정할 내용을 입력하세요"
+    // 수정 기능
+    func editTodoItem(at indexPath: IndexPath) {
+        let alertController = UIAlertController(title: "할 일 수정", message: nil, preferredStyle: .alert)
+        alertController.addTextField { (textField) in
             textField.text = self.todoItems[indexPath.row]
         }
-
-        let saveAction = UIAlertAction(title: "저장", style: .default) { [weak self] _ in
-            if let textField = alertController.textFields?.first, let text = textField.text, !text.isEmpty {
+        alertController.addAction(UIAlertAction(title: "확인", style: .default) { [weak self] (_) in
+            if let text = alertController.textFields?.first?.text, !text.isEmpty {
                 self?.todoItems[indexPath.row] = text
                 self?.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
-        }
-
-        let cancelAction = UIAlertAction(title: "취소", style: .cancel, handler: nil)
-
-        alertController.addAction(saveAction)
-        alertController.addAction(cancelAction)
-
+        })
+        alertController.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
         present(alertController, animated: true, completion: nil)
     }
 
-    // 삭제 액션 실행
-    func deleteItem(at indexPath: IndexPath) {
+    // 삭제 기능
+    func deleteTodoItem(at indexPath: IndexPath) {
         todoItems.remove(at: indexPath.row)
-        tableView.deleteRows(at: [indexPath], with: .fade)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
+    }
+
+    // 스와이프하여 수정 및 삭제 기능 추가
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let editAction = UITableViewRowAction(style: .default, title: "수정") { [weak self] (_, indexPath) in
+            self?.editTodoItem(at: indexPath)
+        }
+        let deleteAction = UITableViewRowAction(style: .destructive, title: "삭제") { [weak self] (_, indexPath) in
+            self?.deleteTodoItem(at: indexPath)
+        }
+
+        return [deleteAction, editAction]
+    }
+
+    // 입력 창에서 리턴 키를 누를 때 호출되는 메서드
+    @objc func addTodoItem() {
+        if isAddingItem {
+            // 이미 추가 중이라면 입력을 완료하고 배열에 추가
+            if let text = inputTextField.text, !text.isEmpty {
+                todoItems.append(text)
+                inputTextField.text = ""
+                tableView.reloadData()
+            }
+            isAddingItem = false
+            inputTextField.resignFirstResponder() // 입력 행 포커스 해제
+        } else {
+            // 추가 중이 아니라면 입력 행을 보여줌
+            isAddingItem = true
+            inputTextField.becomeFirstResponder() // 입력 행 포커스 설정
+        }
     }
 }
 
-
+extension ViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        addTodoItem()
+        return true
+    }
+}
 
 
