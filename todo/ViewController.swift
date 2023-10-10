@@ -64,10 +64,16 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
 
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // 수정 액션
+        let editAction = UIContextualAction(style: .normal, title: "수정") { [weak self] (action, view, completionHandler) in
+            self?.editItem(at: indexPath)
+            completionHandler(true)
+        }
+        editAction.backgroundColor = .blue
+
+        // 삭제 액션
         let deleteAction = UIContextualAction(style: .destructive, title: "삭제") { [weak self] (action, view, completionHandler) in
-            // 선택된 행을 삭제
-            self?.todoItems.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .fade)
+            self?.deleteItem(at: indexPath)
             completionHandler(true)
         }
 
@@ -75,7 +81,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         deleteAction.backgroundColor = .red
         deleteAction.image = UIImage(systemName: "trash")
 
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction, editAction])
         return configuration
     }
 
@@ -106,7 +112,38 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 
         present(alertController, animated: true, completion: nil)
     }
+
+    // 수정 액션 실행
+    func editItem(at indexPath: IndexPath) {
+        let alertController = UIAlertController(title: "수정", message: "", preferredStyle: .alert)
+
+        alertController.addTextField { textField in
+            textField.placeholder = "수정할 내용을 입력하세요"
+            textField.text = self.todoItems[indexPath.row]
+        }
+
+        let saveAction = UIAlertAction(title: "저장", style: .default) { [weak self] _ in
+            if let textField = alertController.textFields?.first, let text = textField.text, !text.isEmpty {
+                self?.todoItems[indexPath.row] = text
+                self?.tableView.reloadRows(at: [indexPath], with: .automatic)
+            }
+        }
+
+        let cancelAction = UIAlertAction(title: "취소", style: .cancel, handler: nil)
+
+        alertController.addAction(saveAction)
+        alertController.addAction(cancelAction)
+
+        present(alertController, animated: true, completion: nil)
+    }
+
+    // 삭제 액션 실행
+    func deleteItem(at indexPath: IndexPath) {
+        todoItems.remove(at: indexPath.row)
+        tableView.deleteRows(at: [indexPath], with: .fade)
+    }
 }
+
 
 
 
