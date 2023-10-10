@@ -19,7 +19,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         layout()
         
         navigationController?.navigationBar.isHidden = false
-
     }
 
     //MARK: - Style & Layouts
@@ -60,7 +59,29 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         cell.textLabel?.text = todoItems[indexPath.row]
+
         return cell
+    }
+
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: "삭제") { [weak self] (action, view, completionHandler) in
+            // 선택된 행을 삭제
+            self?.todoItems.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            completionHandler(true)
+        }
+
+        // 삭제 작업 버튼의 배경색과 아이콘을 지정
+        deleteAction.backgroundColor = .red
+        deleteAction.image = UIImage(systemName: "trash")
+
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        return configuration
+    }
+
+    // "삭제" 버튼 눌렀을 때 호출되는 메서드
+    @objc func deleteButtonTapped(_ sender: UIButton) {
+        // 이 부분은 필요 없습니다.
     }
 
     // 할 일 추가 버튼 액션
