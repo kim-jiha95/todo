@@ -54,13 +54,13 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     private func layout() {
         // 테이블 뷰의 제약 조건 추가
         NSLayoutConstraint.activate([
-            inputTextField.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
+            inputTextField.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
             inputTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             inputTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            tableView.topAnchor.constraint(equalTo: inputTextField.bottomAnchor, constant: 20),
+            tableView.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            tableView.bottomAnchor.constraint(equalTo: inputTextField.topAnchor, constant: -20) // 입력 행 위에 위치
         ])
     }
 
@@ -135,5 +135,6 @@ extension ViewController: UITextFieldDelegate {
         return true
     }
 }
+
 
 
