@@ -4,12 +4,16 @@ final class TodoViewController: UIViewController, UITableViewDelegate {
     private var todoItems: [String] = []
     private var isAddingItem: Bool = false
     
+    /// UITableViewCell -> TodoCell
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.register(
+            UITableViewCell.self,
+            forCellReuseIdentifier: UITableViewCell.reusableIdentifier
+        )
         return tableView
     }()
     
@@ -96,7 +100,10 @@ final class TodoViewController: UIViewController, UITableViewDelegate {
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
 
-    
+    /// 숙제:
+    /// setNeedsLayout, layoutIfNeeded의 차이점
+    /// 각각 언제 어떻게 써야하는지
+    /// 영어로 된 medium
     @objc private func adjustForKeyboard(_ notification: Notification) {
         guard let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
             return
@@ -118,8 +125,18 @@ final class TodoViewController: UIViewController, UITableViewDelegate {
     }
 
     private func setupKeyboardObservers() {
-        NotificationCenter.default.addObserver(self, selector: #selector(adjustForKeyboard(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(adjustForKeyboard(_:)), name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(adjustForKeyboard),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(adjustForKeyboard),
+            name: UIResponder.keyboardWillChangeFrameNotification,
+            object: nil
+        )
     }
     
     @objc private func addButtonTapped() {
@@ -157,14 +174,20 @@ extension TodoViewController: UITableViewDataSource {
         return todoItems.count
     }
 
+    /// 숙제:
+    /// cell이 dequeue, 재사용되는 과정
+    /// 그래서 무엇을 유의해야하는지
+    /// dequeueReusableCell가 무슨 역할을 하고 있는지
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: UITableViewCell.reusableIdentifier,
+            for: indexPath
+        )
 
-        if indexPath.row < todoItems.count {
-            cell.textLabel?.text = todoItems[indexPath.row]
-        } else {
-            cell.textLabel?.text = "Out of range"
-        }
+        guard
+            let todoItem = todoItems[safe: indexPath.row]
+        else { return cell }
+        cell.textLabel?.text = todoItem
 
         return cell
     }
