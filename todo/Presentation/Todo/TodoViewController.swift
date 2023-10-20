@@ -100,10 +100,7 @@ final class TodoViewController: UIViewController, UITableViewDelegate {
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
 
-    /// 숙제:
-    /// setNeedsLayout, layoutIfNeeded의 차이점
-    /// 각각 언제 어떻게 써야하는지
-    /// 영어로 된 medium
+    /// setNeedsLayout -> next run loop , layoutIfNeeded -> in this loop(direct)
     @objc private func adjustForKeyboard(_ notification: Notification) {
         guard let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
             return
@@ -119,8 +116,6 @@ final class TodoViewController: UIViewController, UITableViewDelegate {
             tableView.contentInset = inset
             tableView.contentOffset = CGPoint(x: 0, y: max(0, tableView.contentSize.height - tableView.frame.size.height + tableView.contentInset.bottom))
         }
-        
-        view.setNeedsLayout()
         view.layoutIfNeeded()
     }
 
@@ -174,10 +169,9 @@ extension TodoViewController: UITableViewDataSource {
         return todoItems.count
     }
 
-    /// 숙제:
-    /// cell이 dequeue, 재사용되는 과정
+    /// cell이 dequeue, 재사용되는 과정 ->  Cell Identifier --> Dequeue Cell: -> Configure Cell -> Handle Nil Data: Custom Cell Configuration: -> Performance Considerations
     /// 그래서 무엇을 유의해야하는지
-    /// dequeueReusableCell가 무슨 역할을 하고 있는지
+    /// reusableIdentifier -> // newer dequeue method guarantees a cell is returned and resized properly, assuming identifier is registered
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(
             withIdentifier: UITableViewCell.reusableIdentifier,
