@@ -19,9 +19,13 @@ final class TodoCell: UITableViewCell {
     required init?(coder: NSCoder) {
         fatalError("Error")
     }
-    
-    func layout() {
-        self.addSubview(title)
-    }
-    // 우리만의 셀을 커스텀해서 쓴다.
+    private func commonInit() {
+            title.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(title)
+
+            NSLayoutConstraint.activate([
+                title.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+                title.centerYAnchor.constraint(equalTo: centerYAnchor),
+            ])
+        }
 }

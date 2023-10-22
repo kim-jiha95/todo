@@ -2,7 +2,7 @@ import UIKit
 
 final class TodoViewController: UIViewController, UITableViewDelegate {
     private var todoItems: [String] = []
-    private var isAddingItem: Bool = false
+    private var isAddingItem: Bool = true
     
     /// UITableViewCell -> TodoCell
     private lazy var tableView: UITableView = {
@@ -10,10 +10,12 @@ final class TodoViewController: UIViewController, UITableViewDelegate {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(
-            UITableViewCell.self,
-            forCellReuseIdentifier: UITableViewCell.reusableIdentifier
-        )
+//        tableView.register(
+//            UITableViewCell.self,
+//            forCellReuseIdentifier: UITableViewCell.reusableIdentifier
+//        )
+        tableView.register(TodoCell.self, forCellReuseIdentifier: TodoCell.cellId) // Register your custom cell
+
         return tableView
     }()
     
@@ -173,11 +175,14 @@ extension TodoViewController: UITableViewDataSource {
     /// 그래서 무엇을 유의해야하는지
     /// reusableIdentifier -> // newer dequeue method guarantees a cell is returned and resized properly, assuming identifier is registered
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: UITableViewCell.reusableIdentifier,
-            for: indexPath
-        )
-
+//        let cell = tableView.dequeueReusableCell(
+//            withIdentifier: UITableViewCell.reusableIdentifier,
+//            for: indexPath
+//        )
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: TodoCell.cellId, for: indexPath) as? TodoCell else {
+              fatalError("Failed to dequeue a TodoCell.")
+          }
+        
         guard
             let todoItem = todoItems[safe: indexPath.row]
         else { return cell }
