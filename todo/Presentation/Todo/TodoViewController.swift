@@ -10,11 +10,7 @@ final class TodoViewController: UIViewController, UITableViewDelegate {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.dataSource = self
         tableView.delegate = self
-//        tableView.register(
-//            UITableViewCell.self,
-//            forCellReuseIdentifier: UITableViewCell.reusableIdentifier
-//        )
-        tableView.register(TodoCell.self, forCellReuseIdentifier: TodoCell.cellId) // Register your custom cell
+        tableView.register(TodoCell.self, forCellReuseIdentifier: TodoCell.cellId)
 
         return tableView
     }()
@@ -102,24 +98,35 @@ final class TodoViewController: UIViewController, UITableViewDelegate {
         tableView.deleteRows(at: [indexPath], with: .automatic)
     }
 
-    /// setNeedsLayout -> next run loop , layoutIfNeeded -> in this loop(direct)
     @objc private func adjustForKeyboard(_ notification: Notification) {
         guard let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue else {
             return
         }
 
-        let bottomSpace = keyboardSize.height - view.safeAreaInsets.bottom
+        if todoItems.count >= 10 {
+            let bottomSpace = keyboardSize.height - view.safeAreaInsets.bottom
 
-        if notification.name == UIResponder.keyboardWillHideNotification {
-            tableView.contentInset = .zero
-            tableView.contentOffset = .zero
-        } else {
-            let inset = UIEdgeInsets(top: 0, left: 0, bottom: bottomSpace, right: 0)
-            tableView.contentInset = inset
-            tableView.contentOffset = CGPoint(x: 0, y: max(0, tableView.contentSize.height - tableView.frame.size.height + tableView.contentInset.bottom))
+            if notification.name == UIResponder.keyboardWillHideNotification {
+                tableView.contentInset = .zero
+                tableView.contentOffset = .zero
+            } else {
+                let keyboardFrameInView = tableView.convert(keyboardSize, from: nil)
+                let keyboardOverlap = max(0, keyboardFrameInView.minY - inputTextField.frame.maxY)
+                if keyboardOverlap > 0 {
+                    let inset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardOverlap, right: 0)
+                    tableView.contentInset = inset
+                    tableView.contentOffset = CGPoint(x: 0, y: max(0, tableView.contentSize.height - tableView.frame.size.height + tableView.contentInset.bottom))
+                } else {
+                    tableView.contentInset = .zero
+                    tableView.contentOffset = .zero
+                }
+            }
+            view.layoutIfNeeded()
         }
-        view.layoutIfNeeded()
     }
+
+
+
 
     private func setupKeyboardObservers() {
         NotificationCenter.default.addObserver(
@@ -175,10 +182,6 @@ extension TodoViewController: UITableViewDataSource {
     /// 그래서 무엇을 유의해야하는지
     /// reusableIdentifier -> // newer dequeue method guarantees a cell is returned and resized properly, assuming identifier is registered
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        let cell = tableView.dequeueReusableCell(
-//            withIdentifier: UITableViewCell.reusableIdentifier,
-//            for: indexPath
-//        )
         guard let cell = tableView.dequeueReusableCell(withIdentifier: TodoCell.cellId, for: indexPath) as? TodoCell else {
               fatalError("Failed to dequeue a TodoCell.")
           }
